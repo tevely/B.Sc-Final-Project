@@ -1,0 +1,24 @@
+{
+  "hp_max_evals": 5000,
+  "hp_method": "tpe",
+  "exp": "doubletrack",
+  "db": "sqlite:///../data/doubletrack.db",
+  "trials": "../data/doubletrack.trials",
+  "continue": true,
+  "loss": "int_eff_area",
+  "r_in": {"0.775": 2.65, "0.405": 1.2},
+  "r_out": {"0.775": 5.25, "0.405":  2.5},
+  "model": "doubletrack",
+  "hp_space":
+  {
+    "dn_track": ["choice", -3e-3, -4e-3, -5e-3, -6e-3, -7e-3, -8e-3, -9e-3, -10e-3],
+    "track_w": ["quniform", 0.5, 3, 0.1],
+    "track_h": ["quniform", 5, 30, 0.1],
+    "gap": ["quniform", 6, 30, 0.1],
+    "space_x": ["choice", 20],
+    "dx": ["choice", 0.2],
+    "npml": ["choice", 5],
+    "wl_pump": ["choice", 0.405, 0.775],
+    "nmodes": ["choice", 10]
+  }
+}

@@ -1,0 +1,378 @@
+diff --git a/+BPMmatlab/@model/FD_BPM.m b/+BPMmatlab/@model/FD_BPM.m
+index 44a5209..a6c9b39 100644
+--- a/+BPMmatlab/@model/FD_BPM.m
++++ b/+BPMmatlab/@model/FD_BPM.m
+@@ -167,8 +167,10 @@ if Nz_n > 1
+   x_n = getGridArray(Nx_n,dx,P.ySymmetry);
+   y_n = getGridArray(Ny_n,dy,P.xSymmetry);
+   z_n = dz_n*(0:Nz_n-1);
+-  plotVolumetric(201,x_n,y_n,z_n,real(n),'BPM-Matlab_RI');
+-  title('Real part of refractive index');xlabel('x [m]');ylabel('y [m]');zlabel('z [m]');
++  if P.doPlot
++    plotVolumetric(201,x_n,y_n,z_n,real(n),'BPM-Matlab_RI');
++    title('Real part of refractive index');xlabel('x [m]');ylabel('y [m]');zlabel('z [m]');
++  end
+ end
+ 
+ %% Calculate z step size and positions
+@@ -204,42 +206,44 @@ yEdge = P.Ly_main*(1 + (P.xSymmetry ~= 0))/2;
+ multiplier = single(exp(-dz*max(0,max(abs(Y) - yEdge,abs(X) - xEdge)).^2*P.alpha)); % Is real
+ 
+ %% Figure initialization
+-h_f = figure(P.figNum);clf reset;
+-if strcmp(h_f.WindowStyle,'normal') 
+-  h_f.WindowState = 'maximized';
+-end
++if P.doPlot
++    h_f = figure(P.figNum);clf reset;
++    if strcmp(h_f.WindowStyle,'normal')
++      h_f.WindowState = 'maximized';
++    end
+ 
+-xlims = ([-1 1] + (P.ySymmetry ~= 0))*Lx/(2*P.plotZoom);
+-ylims = ([-1 1] + (P.xSymmetry ~= 0))*Ly/(2*P.plotZoom);
+-
+-if P.xSymmetry ~= 0 && P.ySymmetry ~= 0
+-  redline_x = [0 P.Lx_main P.Lx_main];
+-  redline_y = [P.Ly_main P.Ly_main 0];
+-elseif P.xSymmetry ~= 0
+-  redline_x = [-P.Lx_main -P.Lx_main P.Lx_main P.Lx_main]/2;
+-  redline_y = [0 P.Ly_main P.Ly_main 0];
+-elseif P.ySymmetry ~= 0
+-  redline_x = [0 P.Lx_main P.Lx_main 0];
+-  redline_y = [-P.Ly_main -P.Ly_main P.Ly_main P.Ly_main]/2;
+-else
+-  redline_x = [-P.Lx_main P.Lx_main P.Lx_main -P.Lx_main -P.Lx_main]/2;
+-  redline_y = [P.Ly_main P.Ly_main -P.Ly_main -P.Ly_main P.Ly_main]/2;
+-end
++    xlims = ([-1 1] + (P.ySymmetry ~= 0))*Lx/(2*P.plotZoom);
++    ylims = ([-1 1] + (P.xSymmetry ~= 0))*Ly/(2*P.plotZoom);
++
++    if P.xSymmetry ~= 0 && P.ySymmetry ~= 0
++      redline_x = [0 P.Lx_main P.Lx_main];
++      redline_y = [P.Ly_main P.Ly_main 0];
++    elseif P.xSymmetry ~= 0
++      redline_x = [-P.Lx_main -P.Lx_main P.Lx_main P.Lx_main]/2;
++      redline_y = [0 P.Ly_main P.Ly_main 0];
++    elseif P.ySymmetry ~= 0
++      redline_x = [0 P.Lx_main P.Lx_main 0];
++      redline_y = [-P.Ly_main -P.Ly_main P.Ly_main P.Ly_main]/2;
++    else
++      redline_x = [-P.Lx_main P.Lx_main P.Lx_main -P.Lx_main -P.Lx_main]/2;
++      redline_y = [P.Ly_main P.Ly_main -P.Ly_main -P.Ly_main P.Ly_main]/2;
++    end
+ 
+-h_axis1 = subplot(2,2,1);
+-h_im1 = imagesc(x_plot,y_plot,real(n_slice(ix_plot,iy_plot)).');
+-axis xy
+-axis equal
+-xlim(xlims);
+-ylim(ylims);
+-colorbar;
+-setColormap(gca,P.nColormap);
+-if P.n_colorlimits(2) > P.n_colorlimits(1) % Default is [0 0], so false
+-  h_axis1.CLim = P.n_colorlimits;
++    h_axis1 = subplot(2,2,1);
++    h_im1 = imagesc(x_plot,y_plot,real(n_slice(ix_plot,iy_plot)).');
++    axis xy
++    axis equal
++    xlim(xlims);
++    ylim(ylims);
++    colorbar;
++    setColormap(gca,P.nColormap);
++    if P.n_colorlimits(2) > P.n_colorlimits(1) % Default is [0 0], so false
++      h_axis1.CLim = P.n_colorlimits;
++    end
++    xlabel('x [m]');
++    ylabel('y [m]');
++    title('Real part of refractive index');
+ end
+-xlabel('x [m]');
+-ylabel('y [m]');
+-title('Real part of refractive index');
+ 
+ if P.xSymmetry ~= 0
+   y0idx = 1;
+@@ -272,58 +276,60 @@ if P.storeE3D
+   end
+ end
+ 
+-h_ax2 = subplot(2,2,2);
+-h_plot2 = plot(P.z,P.powers,'linewidth',2);
+-xlim([0 P.z(end)]);
+-ylim([0 1.1]);
+-xlabel('Propagation distance [m]');
+-ylabel('Relative power remaining');
+-grid on; grid minor;
+-
+-h_axis3a = subplot(2,2,3);
+-hold on;
+-box on;
+-h_im3a = imagesc(x_plot,y_plot,abs(E(ix_plot,iy_plot).').^2);
+-axis xy;
+-axis equal;
+-xlim(xlims);
+-ylim(ylims);
+-colorbar;
+-xlabel('x [m]');
+-ylabel('y [m]');
+-title('Intensity [W/m^2]');
+-line(redline_x,redline_y,'color','r','linestyle','--');
+-setColormap(gca,P.intensityColormap);
+-if P.plotEmax ~= 0
+-  caxis('manual');
+-  caxis([0 P.plotEmax*max(abs(E(:)).^2)]);
+-else
+-  caxis('auto');
+-end
++if P.doPlot
++    h_ax2 = subplot(2,2,2);
++    h_plot2 = plot(P.z,P.powers,'linewidth',2);
++    xlim([0 P.z(end)]);
++    ylim([0 1.1]);
++    xlabel('Propagation distance [m]');
++    ylabel('Relative power remaining');
++    grid on; grid minor;
++
++    h_axis3a = subplot(2,2,3);
++    hold on;
++    box on;
++    h_im3a = imagesc(x_plot,y_plot,abs(E(ix_plot,iy_plot).').^2);
++    axis xy;
++    axis equal;
++    xlim(xlims);
++    ylim(ylims);
++    colorbar;
++    xlabel('x [m]');
++    ylabel('y [m]');
++    title('Intensity [W/m^2]');
++    line(redline_x,redline_y,'color','r','linestyle','--');
++    setColormap(gca,P.intensityColormap);
++    if P.plotEmax ~= 0
++      caxis('manual');
++      caxis([0 P.plotEmax*max(abs(E(:)).^2)]);
++    else
++      caxis('auto');
++    end
+ 
+-h_axis3b = subplot(2,2,4);
+-hold on;
+-box on;
+-maxE0 = abs(max(E(:)));
+-h_im3b = imagesc(x_plot,y_plot,angle(E(ix_plot,iy_plot).'));
+-h_im3b.AlphaData = max(0,(1+log10(abs(E(ix_plot,iy_plot).'/maxE0).^2)/3));  %Logarithmic transparency in displaying phase outside cores
+-h_axis3b.Color = 0.7*[1 1 1];  % To set the color corresponding to phase outside the cores where there is no field at all
+-axis xy;
+-axis equal;
+-xlim(xlims);
+-ylim(ylims);
+-colorbar;
+-caxis([-pi pi]);
+-line(redline_x,redline_y,'color','r','linestyle','--');
+-xlabel('x [m]');
+-ylabel('y [m]');
+-title('Phase [rad]');
+-setColormap(gca,P.phaseColormap);
+-
+-if ~verLessThan('matlab','9.5')
+-  sgtitle(P.figTitle,'FontSize',15,'FontWeight','bold');
++    h_axis3b = subplot(2,2,4);
++    hold on;
++    box on;
++    maxE0 = abs(max(E(:)));
++    h_im3b = imagesc(x_plot,y_plot,angle(E(ix_plot,iy_plot).'));
++    h_im3b.AlphaData = max(0,(1+log10(abs(E(ix_plot,iy_plot).'/maxE0).^2)/3));  %Logarithmic transparency in displaying phase outside cores
++    h_axis3b.Color = 0.7*[1 1 1];  % To set the color corresponding to phase outside the cores where there is no field at all
++    axis xy;
++    axis equal;
++    xlim(xlims);
++    ylim(ylims);
++    colorbar;
++    caxis([-pi pi]);
++    line(redline_x,redline_y,'color','r','linestyle','--');
++    xlabel('x [m]');
++    ylabel('y [m]');
++    title('Phase [rad]');
++    setColormap(gca,P.phaseColormap);
++
++    if ~verLessThan('matlab','9.5')
++      sgtitle(P.figTitle,'FontSize',15,'FontWeight','bold');
++    end
++    drawnow;
+ end
+-drawnow;
+ 
+ if P.saveVideo
+   frame = getframe(h_f);  %Get the frames
+@@ -340,17 +346,18 @@ if P.calcModeOverlaps % Mode overlap figure
+       P.modeOverlaps(iMode,1) = abs(sum(E(:).*conj(P.modes(iMode).field(:)))).^2/powerFraction; % The overlap integral calculation
+     end
+   end
+-  
+-  figure(P.figNum+1);clf reset;
+-  h_ax = axes;
+-  h_overlapplot = semilogy(P.z,P.modeOverlaps,'linewidth',2);
+-  xlim([0 P.z(end)]);
+-  ylim([1e-4 2]);
+-  xlabel('Propagation distance [m]');
+-  ylabel('Mode overlaps');
+-  legend(P.modes.label,'location','eastoutside','FontSize',6);
+-  grid on; grid minor;
+-  h_ax.LineStyleOrder = {'-','--',':','-.'};
++  if P.doPlot
++    figure(P.figNum+1);clf reset;
++    h_ax = axes;
++    h_overlapplot = semilogy(P.z,P.modeOverlaps,'linewidth',2);
++    xlim([0 P.z(end)]);
++    ylim([1e-4 2]);
++    xlabel('Propagation distance [m]');
++    ylabel('Mode overlaps');
++    legend(P.modes.label,'location','eastoutside','FontSize',6);
++    grid on; grid minor;
++    h_ax.LineStyleOrder = {'-','--',':','-.'};
++  end
+ end
+ 
+ %% Load variables into a parameters struct and start looping, one iteration per update
+@@ -386,14 +393,16 @@ for updidx = 1:length(zUpdateIdxs)
+   h_im3a.CData = abs(E(ix_plot,iy_plot).').^2; % Intensity at this update
+   h_im3b.CData = angle(E(ix_plot,iy_plot).'); % Phase at this update
+   h_im3b.AlphaData = max(0,(1+log10(abs(E(ix_plot,iy_plot).'/max(abs(E(:)))).^2)/3));  %Logarithmic transparency in displaying phase outside cores
+-  if updidx == 1
+-    caxis(h_axis1,'auto'); % To refresh the numbers on the color bar
+-  end
+-  if P.plotEmax == 0
+-    caxis(h_axis3a,'auto');
+-  end
+-  if P.n_colorlimits(2) > P.n_colorlimits(1) % Default is [0 0], so false
+-    h_axis1.CLim = P.n_colorlimits;
++  if P.doPlot
++      if updidx == 1
++        caxis(h_axis1,'auto'); % To refresh the numbers on the color bar
++      end
++      if P.plotEmax == 0
++        caxis(h_axis3a,'auto');
++      end
++      if P.n_colorlimits(2) > P.n_colorlimits(1) % Default is [0 0], so false
++        h_axis1.CLim = P.n_colorlimits;
++      end
+   end
+ 
+   mexParameters.inputPrecisePower = precisePower;
+@@ -434,60 +443,62 @@ if P.storeE3D
+   else
+     z = P.z(end-P.updates+1:end);
+   end
+-  if numel(z) > 1
++  if P.doPlot && numel(z) > 1
+     plotVolumetric(201 + numel(P.E3D),x,y,z,abs(P.E3D{end}).^2,'BPM-Matlab_I');
+   end
+ end
+ 
+ %% Calculate and plot the far field of the final E
+-figure(P.figNum+2);clf reset;
+-if hasMexImagescBug
+-  N_FFhalf = 250; % Points to have at negative theta_x and theta_y in the far field
+-else
+-  N_FFhalf = 1000; % Points to have at negative theta_x and theta_y in the far field
+-end
+-N_FF = 2*N_FFhalf + 1; % Total number of points in theta_x and theta_y
+-theta_max = 30; % [deg] max angle
++if P.doPlot
++    figure(P.figNum+2);clf reset;
++    if hasMexImagescBug
++      N_FFhalf = 250; % Points to have at negative theta_x and theta_y in the far field
++    else
++      N_FFhalf = 1000; % Points to have at negative theta_x and theta_y in the far field
++    end
++    N_FF = 2*N_FFhalf + 1; % Total number of points in theta_x and theta_y
++    theta_max = 30; % [deg] max angle
+ 
+-theta_x = linspace(-theta_max,theta_max,N_FF);
+-kx = 2*pi/P.lambda*theta_x/180*pi;
+-dx_FF = 2*pi/(kx(2)-kx(1))/N_FF;
+-x_FF = (-(N_FF-1)/2:(N_FF-1)/2)*dx_FF;
++    theta_x = linspace(-theta_max,theta_max,N_FF);
++    kx = 2*pi/P.lambda*theta_x/180*pi;
++    dx_FF = 2*pi/(kx(2)-kx(1))/N_FF;
++    x_FF = (-(N_FF-1)/2:(N_FF-1)/2)*dx_FF;
+ 
+-theta_y = linspace(-theta_max,theta_max,N_FF);
+-ky = 2*pi/P.lambda*theta_y/180*pi;
+-dy_FF = 2*pi/(ky(2)-ky(1))/N_FF;
+-y_FF = (-(N_FF-1)/2:(N_FF-1)/2)*dy_FF;
++    theta_y = linspace(-theta_max,theta_max,N_FF);
++    ky = 2*pi/P.lambda*theta_y/180*pi;
++    dy_FF = 2*pi/(ky(2)-ky(1))/N_FF;
++    y_FF = (-(N_FF-1)/2:(N_FF-1)/2)*dy_FF;
+ 
+-[x_full,y_full,E_full] = calcFullField(x,y,E);
++    [x_full,y_full,E_full] = calcFullField(x,y,E);
+ 
+-E_interp = interpn(x_full,y_full.',E_full,x_FF,y_FF.','linear',0);
++    E_interp = interpn(x_full,y_full.',E_full,x_FF,y_FF.','linear',0);
+ 
+-E_FF = fftshift(fft2(ifftshift(conj(E_interp))));
++    E_FF = fftshift(fft2(ifftshift(conj(E_interp))));
+ 
+-subplot(1,2,1);
+-imagesc(theta_x,theta_y,abs(E_FF.').^2);
+-axis xy equal tight;
+-Theta_x = 4*std(theta_x,sum(abs(E_FF).^2,2));
+-Theta_y = 4*std(theta_y,sum(abs(E_FF).^2,1));
+-if ~verLessThan('matlab','9.5')
+-  sgtitle('Far field in air, in paraxial approximation');
++    subplot(1,2,1);
++    imagesc(theta_x,theta_y,abs(E_FF.').^2);
++    axis xy equal tight;
++    Theta_x = 4*std(theta_x,sum(abs(E_FF).^2,2));
++    Theta_y = 4*std(theta_y,sum(abs(E_FF).^2,1));
++    if ~verLessThan('matlab','9.5')
++      sgtitle('Far field in air, in paraxial approximation');
++    end
++    title({'Intensity','Divergence 4\sigma full-angles:',['\Theta_x = ' num2str(Theta_x,3) ' deg, \Theta_y = ' num2str(Theta_y,3) ' deg']});
++    xlabel('\theta_x [deg]');
++    ylabel('\theta_y [deg]');
++    colorbar;
++    setColormap(gca,P.intensityColormap);
++
++    subplot(1,2,2);
++    imagesc(theta_x,theta_y,angle(E_FF.'),'AlphaData',max(0,(1+log10(abs(E_FF.'/max(abs(E_FF(:)))).^2)/3)));
++    set(gca,'Color',0.7*[1 1 1]);
++    axis xy equal tight;
++    title('Phase');
++    xlabel('\theta_x [deg]');
++    ylabel('\theta_y [deg]');
++    colorbar;
++    setColormap(gca,P.phaseColormap);
+ end
+-title({'Intensity','Divergence 4\sigma full-angles:',['\Theta_x = ' num2str(Theta_x,3) ' deg, \Theta_y = ' num2str(Theta_y,3) ' deg']});
+-xlabel('\theta_x [deg]');
+-ylabel('\theta_y [deg]');
+-colorbar;
+-setColormap(gca,P.intensityColormap);
+-
+-subplot(1,2,2);
+-imagesc(theta_x,theta_y,angle(E_FF.'),'AlphaData',max(0,(1+log10(abs(E_FF.'/max(abs(E_FF(:)))).^2)/3)));
+-set(gca,'Color',0.7*[1 1 1]);
+-axis xy equal tight;
+-title('Phase');
+-xlabel('\theta_x [deg]');
+-ylabel('\theta_y [deg]');
+-colorbar;
+-setColormap(gca,P.phaseColormap);
+ 
+ %% Store the final E field and n as the new inputs
+ P.E.Lx = P.Lx;
+diff --git a/+BPMmatlab/@model/model.m b/+BPMmatlab/@model/model.m
+index 3084aaa..1f106c3 100644
+--- a/+BPMmatlab/@model/model.m
++++ b/+BPMmatlab/@model/model.m
+@@ -9,6 +9,7 @@ classdef model
+     name (1,:) char
+     figTitle (1,:) char = ''
+     figNum (1,1) double {mustBeInteger, mustBePositive} = 1
++    doPlot (1,1) logical = true
+     updates (1,1) double {mustBeInteger, mustBePositive} = 50
+     plotEmax (1,1) double {mustBeNonnegative} = 0
+     plotZoom (1,1) double {mustBeGreaterThanOrEqual(plotZoom,1)} = 1

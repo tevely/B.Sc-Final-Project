@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+scipy = "*"
+pandas = "*"
+matplotlib = "*"
+joblib = "*"
+tqdm = "*"
+hyperopt = "*"
+reservoirpy = "*"
+matlabengine = "==23.2.*"
+h5py = "*"
+sqlalchemy = "*"
+
+[dev-packages]
+pylint = "*"
+spyder-kernels = "==2.5.*"
+rope = "*"
+
+[requires]
+python_version = "3.11"

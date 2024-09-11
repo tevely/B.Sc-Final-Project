@@ -1,0 +1,22 @@
+diff --git a/+BPMmatlab/@model/model.m b/+BPMmatlab/@model/model.m
+index 3084aaa..68cdf0e 100644
+--- a/+BPMmatlab/@model/model.m
++++ b/+BPMmatlab/@model/model.m
+@@ -54,6 +54,9 @@ classdef model
+ 
+     % Electric field to propagate
+     E (1,1) BPMmatlab.electricFieldProfile
++
++    % Guided modes to calculate overlaps with
++    modes BPMmatlab.electricFieldProfile
+   end
+   
+   properties (Dependent)
+@@ -75,7 +78,6 @@ classdef model
+     xzSlice
+     yzSlice
+     videoHandle
+-    modes BPMmatlab.electricFieldProfile
+     E3D cell
+     z
+     priorData = false
